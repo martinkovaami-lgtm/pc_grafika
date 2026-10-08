@@ -4,6 +4,7 @@ import graphics.rasterizer.LineRasterizer;
 import graphics.rasterizer.TrivialLineRasterizer;
 import model.Line;
 import model.Point;
+import model.Polygon;
 import view.Canvas;
 
 import java.awt.*;
@@ -27,6 +28,7 @@ public class Controller {
     private final Canvas canvas;
     private final LineRasterizer rasterizer;
 
+
     private final List<Line> lines = new ArrayList<Line>();
     private static final int LINE_COLOR = Color.WHITE.getRGB();
     private static final int PREVIEW_COLOR = Color.RED.getRGB();
@@ -36,6 +38,12 @@ public class Controller {
     public Controller(Canvas canvas) {
         this.canvas = canvas;
         this.rasterizer = new TrivialLineRasterizer(canvas.getRaster());
+
+        lines.add(new Line(new Point(100, 100), new Point(300, 100), Color.WHITE.getRGB()));
+        lines.add(new Line(new Point(300, 100), new Point(350, 250), Color.WHITE.getRGB()));
+        lines.add(new Line(new Point(350, 250), new Point(200, 350), Color.WHITE.getRGB()));
+        lines.add(new Line(new Point(200, 350), new Point(300, 250), Color.WHITE.getRGB()));
+
     }
 
     /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Main functions -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
@@ -46,6 +54,9 @@ public class Controller {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+
+                //TODO: vzit aktualni pozici myši, pridat uvolneni leveho tlacitka, dokoncit vykresleni polygonu
+                //pri spusteni leveho tlacitka zmizi preview cara
                 startPoint = getPoint(e);
                 currentPoint = startPoint;
             }
