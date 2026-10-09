@@ -1,6 +1,8 @@
 package controller;
 
 import graphics.rasterizer.LineRasterizer;
+import graphics.rasterizer.PolygonOutlineRasterizer;
+import graphics.rasterizer.PolygonRasterizer;
 import graphics.rasterizer.TrivialLineRasterizer;
 import model.Line;
 import model.Point;
@@ -9,7 +11,6 @@ import view.Canvas;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +26,10 @@ public class Controller {
     private Point startPoint;
     private Point currentPoint;
 
+    private final Polygon polygon;
     private final Canvas canvas;
     private final LineRasterizer rasterizer;
+    private final PolygonRasterizer polygonRasterizer;
 
 
     private final List<Line> lines = new ArrayList<Line>();
@@ -37,7 +40,9 @@ public class Controller {
 
     public Controller(Canvas canvas) {
         this.canvas = canvas;
+        this.polygon = new Polygon();
         this.rasterizer = new TrivialLineRasterizer(canvas.getRaster());
+        this.polygonRasterizer = new PolygonOutlineRasterizer(rasterizer);
 
         lines.add(new Line(new Point(100, 100), new Point(300, 100), Color.WHITE.getRGB()));
         lines.add(new Line(new Point(300, 100), new Point(350, 250), Color.WHITE.getRGB()));
@@ -50,19 +55,31 @@ public class Controller {
 
     public void init() {
         canvas.clear();
+        polygonRasterizer.rasterize(new Polygon(lines));
         // Obsluha vstupu z myši
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
 
                 //TODO: vzit aktualni pozici myši, pridat uvolneni leveho tlacitka, dokoncit vykresleni polygonu
-                //pri spusteni leveho tlacitka zmizi preview cara
+                // 1. Levé tlačítko:
+                //    - Pokud polygon ještě není dokončený, zahájit kreslení úsečky pomocí startLine(e).
                 startPoint = getPoint(e);
                 currentPoint = startPoint;
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                // TODO: Dokončit rozpracovanou úsečku při uvolnění levého tlačítka.
+                // 1. Ověřit, zda existuje previewLine.
+                // 2. Získat aktuální pozici myši jako koncový bod úsečky.
+                // 3. Vytvořit novou úsečku s barvou LINE_COLOR.
+                //    - Počáteční bod převzít z previewLine.
+                //    - Koncový bod získat z aktuální pozice myši.
+                // 4. Přidat vytvořenou úsečku do polygonu.
+                // 5. Zrušit previewLine.
+                // 6. Překreslit scénu.
+
                 lines.add(new Line(startPoint, getPoint(e), LINE_COLOR));
                 currentPoint = null;
                 startPoint = null;
@@ -70,10 +87,15 @@ public class Controller {
             }
         });
 
-        // Obsluha vstupu z klávesnice
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                // TODO: Aktualizovat náhled rozpracované úsečky.
+                // 1. Ověřit, zda existuje previewLine.
+                // 2. Zachovat její počáteční bod.
+                // 3. Aktualizovat koncový bod podle aktuální pozice myši.
+                // 4. Překreslit scénu.
+
                 if (startPoint == null) {
                     return;
                 }
@@ -81,18 +103,57 @@ public class Controller {
                 render();
             }
         });
+
+        // Obsluha vstupu z klávesnice
+        canvas.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // TODO: Při stisknutí klávesy C vymazat polygon.
+                // 1. Odstranit všechny úsečky polygonu.
+                // 2. Zrušit případný náhled (previewLine).
+                // 3. Obnovit stav polygonu tak, aby bylo možné začít kreslit nový.
+                // 4. Překreslit scénu.
+            }
+        });
         canvas.repaint();
     }
 
     private void render() {
         canvas.clear();
-        for (Line line : lines) {
-            rasterizer.rasterize(line);
-        }
-        if (startPoint != null) {
-            rasterizer.rasterize(new Line(startPoint, currentPoint, PREVIEW_COLOR));
-        }
+        // Vykreslení dosud vytvořených úseček polygonu.
+        // TODO: Zajistit, aby se uzavírací úsečka vykreslila pouze u dokončeného polygonu.
+        polygonRasterizer.rasterize(polygon);
+        // TODO: Vykreslit náhled rozpracované úsečky.
+        // 1. Ověřit, zda previewLine není null.
+        // 2. Vykreslit previewLine pomocí rasterizeru.
         canvas.repaint();
+    }
+
+    private void starLine(MouseEvent e) {
+        // TODO: Zahájit kreslení nové úsečky polygonu.
+        // 1. Ověřit, zda polygon ještě není dokončený.
+        // 2. Získat aktuální pozici myši pomocí getPoint(e).
+        // 3. Určit počáteční bod nové úsečky:
+        //    - Pokud polygon obsahuje úsečky, použít koncový bod poslední úsečky.
+        //    - Pokud je polygon prázdný, použít aktuální pozici myši.
+        // 4. Vytvořit previewLine s barvou PREVIEW_COLOR.
+        //    - Počáteční bod odpovídá bodu určenému v předchozím kroku.
+        //    - Koncový bod odpovídá aktuální pozici myši.
+        // 5. Překreslit scénu.
+    }
+
+    private void finishPolygon(MouseEvent e) {
+        // TODO: Dokončit polygon.
+        // 1. Ověřit, zda polygon obsahuje dostatečný počet vrcholů (alespoň 3).
+        // 2. Označit polygon jako dokončený.
+        // 3. Zajistit, aby rasterizér vykreslil spojovací úsečku mezi posledním a prvním vrcholem polygonu.
+        // 4. Po dokončení již neumožnit přidávání dalších úseček.
+        //
+        // TIP: Do třídy Polygon můžete přidat atribut boolean isFinished
+        //      a odpovídající metody pro zjištění a změnu tohoto stavu.
+        //      PolygonOutlineRasterizer pak může podle tohoto stavu
+        //      rozhodnout, zda má vykreslit uzavírací úsečku.
+        render();
     }
 
     private Point getPoint(MouseEvent e) {

@@ -1,16 +1,14 @@
 package graphics.rasterizer;
 
-import graphics.rasterizer.LineRasterizer;
-import graphics.rasterizer.PolygonRasterrizer;
 import model.Line;
 import model.Polygon;
 import java.util.List;
 
-public class PolygonOutlineRasterrizer implements PolygonRasterrizer {
+public class PolygonOutlineRasterizer implements PolygonRasterizer {
 
     private final LineRasterizer lineRasterizer;
 
-    public PolygonOutlineRasterrizerrizer(LineRasterizer lineRasterizer) {
+    public PolygonOutlineRasterizer(LineRasterizer lineRasterizer) {
         this.lineRasterizer = lineRasterizer;
     }
 
